@@ -3,35 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Text Extraction V3</title>
+    <title>Image Text Extraction</title>
     <style>
         .highlight {
             background-color: yellow;
         }
-        #canvasContainer {
-            position: relative;
-        }
-        #highlightCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
     </style>
 </head>
 <body>
-    <h1>Image Text Extraction V3</h1>
+    <h1>Image Text Extraction</h1>
     <input type="file" id="imageInput" accept="image/*">
     <br><br>
     <button onclick="extractText()">Extract Text</button>
     <br><br>
-    <div id="canvasContainer">
+    <div id="imagePreview" style="display: none;">
         <h2>Uploaded Image</h2>
         <img id="uploadedImage" alt="Uploaded Image" style="max-width: 100%; height: auto;">
-        <canvas id="highlightCanvas"></canvas>
     </div>
     <div id="textResult" style="display: none;">
         <h2>Extracted Text</h2>
-        <div id="imageText"></div>
+        <div id="imageText" style="white-space: pre-wrap;"></div>
     </div>
     <br><br>
     <input type="text" id="searchWord" placeholder="Enter a word to search">
@@ -50,8 +41,6 @@
         const searchWord = document.getElementById('searchWord');
         const searchResult = document.getElementById('searchResult');
         const highlightClass = 'highlight';
-        const highlightCanvas = document.getElementById('highlightCanvas');
-        const ctx = highlightCanvas.getContext('2d');
 
         async function extractText() {
             const file = imageInput.files[0];
@@ -68,9 +57,6 @@
             const { data } = await Tesseract.recognize(file);
             imageText.innerHTML = data.text;
             textResult.style.display = 'block';
-
-            // Clear previous highlights
-            ctx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
         }
 
         function searchText() {
@@ -82,14 +68,14 @@
                 return;
             }
 
-            const regex = new RegExp(`${wordToSearch}(\\d*)`, 'g');
+            const regex = new RegExp(`\\b${wordToSearch}\\b`, 'gi');
             const matches = [];
             let match;
 
             while ((match = regex.exec(text)) !== null) {
                 matches.push(match[0]);
-                // Highlight the word on the image
-                highlightWordOnImage(match[0]);
+                // Highlight the word in the image
+                highlightWordInImage(match[0]);
             }
 
             if (matches.length > 0) {
@@ -99,19 +85,15 @@
             }
         }
 
-        function highlightWordOnImage(word) {
+        function highlightWordInImage(word) {
             const text = imageText.textContent;
             const startIndex = text.indexOf(word);
             if (startIndex !== -1) {
-                // Find the coordinates of the word in the image
-                const range = document.createRange();
-                range.setStart(imageText.firstChild, startIndex);
-                range.setEnd(imageText.firstChild, startIndex + word.length);
-                const rect = range.getBoundingClientRect();
-
-                // Highlight the word on the canvas
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+                const endIndex = startIndex + word.length;
+                const highlightedText = text.substring(0, startIndex) +
+                    `<span class="${highlightClass}">${word}</span>` +
+                    text.substring(endIndex);
+                imageText.innerHTML = highlightedText;
             }
         }
     </script>

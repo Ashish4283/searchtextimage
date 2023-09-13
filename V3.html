@@ -37,7 +37,6 @@
         const uploadedImage = document.getElementById('uploadedImage');
         const imagePreview = document.getElementById('imagePreview');
         const textResult = document.getElementById('textResult');
-        const imageText = document.getElementById('imageText');
         const searchWord = document.getElementById('searchWord');
         const searchResult = document.getElementById('searchResult');
         const highlightClass = 'highlight';
@@ -55,12 +54,18 @@
             imagePreview.style.display = 'block';
 
             const { data } = await Tesseract.recognize(file);
-            imageText.innerHTML = data.text;
-            textResult.style.display = 'block';
+            if (textResult) {
+                textResult.style.display = 'block';
+                const imageText = document.getElementById('imageText');
+                if (imageText) {
+                    imageText.innerHTML = data.text;
+                }
+            }
         }
 
         function searchText() {
-            const text = imageText.textContent;
+            const textResult = document.getElementById('textResult');
+            const text = textResult ? textResult.textContent : '';
             const wordToSearch = searchWord.value.trim();
 
             if (!wordToSearch) {
@@ -78,22 +83,27 @@
                 highlightWordInImage(match[0]);
             }
 
-            if (matches.length > 0) {
-                searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
-            } else {
-                searchResult.innerHTML = 'No matches found.';
+            if (searchResult) {
+                if (matches.length > 0) {
+                    searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
+                } else {
+                    searchResult.innerHTML = 'No matches found.';
+                }
             }
         }
 
         function highlightWordInImage(word) {
-            const text = imageText.textContent;
+            const imageText = document.getElementById('imageText');
+            const text = imageText ? imageText.textContent : '';
             const startIndex = text.indexOf(word);
             if (startIndex !== -1) {
                 const endIndex = startIndex + word.length;
                 const highlightedText = text.substring(0, startIndex) +
                     `<span class="${highlightClass}">${word}</span>` +
                     text.substring(endIndex);
-                imageText.innerHTML = highlightedText;
+                if (imageText) {
+                    imageText.innerHTML = highlightedText;
+                }
             }
         }
     </script>

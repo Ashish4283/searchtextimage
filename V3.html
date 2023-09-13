@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Text Extraction V3</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+        #canvasContainer {
+            position: relative;
+        }
+        #highlightCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Text Extraction V3</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <br><br>
+    <button onclick="extractText()">Extract Text</button>
+    <br><br>
+    <div id="canvasContainer">
+        <h2>Uploaded Image</h2>
+        <img id="uploadedImage" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+        <canvas id="highlightCanvas"></canvas>
+    </div>
+    <div id="textResult" style="display: none;">
+        <h2>Extracted Text</h2>
+        <div id="imageText"></div>
+    </div>
+    <br><br>
+    <input type="text" id="searchWord" placeholder="Enter a word to search">
+    <button onclick="searchText()">Search</button>
+    <br><br>
+    <div id="searchResult"></div>
+
+    <!-- Include Tesseract.js from a CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.2/tesseract.min.js"></script>
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const textResult = document.getElementById('textResult');
+        const imageText = document.getElementById('imageText');
+        const searchWord = document.getElementById('searchWord');
+        const searchResult = document.getElementById('searchResult');
+        const highlightClass = 'highlight';
+        const highlightCanvas = document.getElementById('highlightCanvas');
+        const ctx = highlightCanvas.getContext('2d');
+
+        async function extractText() {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert('Please select an image file.');
+                return;
+            }
+
+            const imageObjectURL = URL.createObjectURL(file);
+            uploadedImage.src = imageObjectURL;
+            uploadedImage.alt = 'Uploaded Image';
+            imagePreview.style.display = 'block';
+
+            const { data } = await Tesseract.recognize(file);
+            imageText.innerHTML = data.text;
+            textResult.style.display = 'block';
+
+            // Clear previous highlights
+            ctx.clearRect(0, 0, highlightCanvas.width, highlightCanvas.height);
+        }
+
+        function searchText() {
+            const text = imageText.textContent;
+            const wordToSearch = searchWord.value.trim();
+
+            if (!wordToSearch) {
+                alert('Please enter a word to search.');
+                return;
+            }
+
+            const regex = new RegExp(`${wordToSearch}(\\d*)`, 'g');
+            const matches = [];
+            let match;
+
+            while ((match = regex.exec(text)) !== null) {
+                matches.push(match[0]);
+                // Highlight the word on the image
+                highlightWordOnImage(match[0]);
+            }
+
+            if (matches.length > 0) {
+                searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
+            } else {
+                searchResult.innerHTML = 'No matches found.';
+            }
+        }
+
+        function highlightWordOnImage(word) {
+            const text = imageText.textContent;
+            const startIndex = text.indexOf(word);
+            if (startIndex !== -1) {
+                // Find the coordinates of the word in the image
+                const range = document.createRange();
+                range.setStart(imageText.firstChild, startIndex);
+                range.setEnd(imageText.firstChild, startIndex + word.length);
+                const rect = range.getBoundingClientRect();
+
+                // Highlight the word on the canvas
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            }
+        }
+    </script>
+</body>
+</html>

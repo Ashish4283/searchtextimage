@@ -43,45 +43,55 @@
         const highlightClass = 'highlight';
 
         async function extractText() {
-            const file = imageInput.files[0];
-            if (!file) {
-                alert('Please select an image file.');
-                return;
+            try {
+                const file = imageInput.files[0];
+                if (!file) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const imageObjectURL = URL.createObjectURL(file);
+                uploadedImage.src = imageObjectURL;
+                uploadedImage.alt = 'Uploaded Image';
+                imagePreview.style.display = 'block';
+
+                const { data } = await Tesseract.recognize(file);
+                imageText.value = data.text;
+                textResult.style.display = 'block';
+            } catch (error) {
+                console.error('Error extracting text:', error);
+                alert('An error occurred while extracting text.');
             }
-
-            const imageObjectURL = URL.createObjectURL(file);
-            uploadedImage.src = imageObjectURL;
-            uploadedImage.alt = 'Uploaded Image';
-            imagePreview.style.display = 'block';
-
-            const { data } = await Tesseract.recognize(file);
-            imageText.value = data.text;
-            textResult.style.display = 'block';
         }
 
         function searchText() {
-            const text = imageText.value;
-            const wordToSearch = searchWord.value.trim();
+            try {
+                const text = imageText.value;
+                const wordToSearch = searchWord.value.trim();
 
-            if (!wordToSearch) {
-                alert('Please enter a word to search.');
-                return;
-            }
+                if (!wordToSearch) {
+                    alert('Please enter a word to search.');
+                    return;
+                }
 
-            const regex = new RegExp(`${wordToSearch}(\\d*)`, 'g');
-            const matches = [];
-            let match;
+                const regex = new RegExp(`${wordToSearch}(\\d*)`, 'g');
+                const matches = [];
+                let match;
 
-            while ((match = regex.exec(text)) !== null) {
-                matches.push(match[0]);
-                // Highlight the word in the image
-                highlightWordInImage(match[0]);
-            }
+                while ((match = regex.exec(text)) !== null) {
+                    matches.push(match[0]);
+                    // Highlight the word in the image
+                    highlightWordInImage(match[0]);
+                }
 
-            if (matches.length > 0) {
-                searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
-            } else {
-                searchResult.innerHTML = 'No matches found.';
+                if (matches.length > 0) {
+                    searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
+                } else {
+                    searchResult.innerHTML = 'No matches found.';
+                }
+            } catch (error) {
+                console.error('Error searching text:', error);
+                alert('An error occurred while searching for text.');
             }
         }
 

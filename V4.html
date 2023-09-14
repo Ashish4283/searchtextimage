@@ -23,7 +23,7 @@
         let imageUrl = null;
 
         function onOpenCvLoaded() {
-            document.getElementById('imageInput').disabled = false;
+            document.getElementById('imageUrl').disabled = false;
         }
 
         function loadImage() {
@@ -37,13 +37,11 @@
 
         function loadImageFromUrl() {
             const inputImageElement = document.getElementById('inputImage');
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                inputImageElement.src = e.target.result;
+            inputImageElement.src = imageUrl;
+            inputImageElement.onload = function () {
                 inputImage = cv.imread(inputImageElement); // Load the image using OpenCV.js
-                imageContainer.style.display = 'block';
+                document.getElementById('imageContainer').style.display = 'block';
             };
-            reader.readAsDataURL(imageUrl);
         }
 
         function highlightWords() {

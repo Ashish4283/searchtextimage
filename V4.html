@@ -37,15 +37,36 @@
 
         function loadImageFromUrl() {
             const inputImageElement = document.getElementById('inputImage');
-            // Use a server-side proxy to fetch the image
-            inputImageElement.src = 'proxy.php?url=' + encodeURIComponent(imageUrl);
+            inputImageElement.src = imageUrl;
             inputImageElement.onload = function () {
                 inputImage = cv.imread(inputImageElement); // Load the image using OpenCV.js
                 document.getElementById('imageContainer').style.display = 'block';
+                highlightWords(); // Call the function to highlight words (you need to implement this)
             };
         }
 
-        // Rest of the code for highlighting words...
+        function highlightWords() {
+            if (!inputImage) {
+                alert('Please load an image first.');
+                return;
+            }
+
+            // You will need to implement OCR logic to detect words and their positions.
+            // Once you have word positions, you can use OpenCV.js to draw boxes around words.
+
+            // Example code for drawing a box (you will need to adapt this based on your word positions):
+            const color = new cv.Scalar(0, 255, 0); // Green color
+            const thickness = 2; // Thickness of the box
+            const topLeft = new cv.Point(50, 50); // Example: Top-left corner of the box
+            const bottomRight = new cv.Point(200, 100); // Example: Bottom-right corner of the box
+            cv.rectangle(inputImage, topLeft, bottomRight, color, thickness);
+
+            // Display the modified image
+            cv.imshow('inputImage', inputImage);
+
+            // Release resources
+            inputImage.delete();
+        }
     </script>
 </body>
 </html>

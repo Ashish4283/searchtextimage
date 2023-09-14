@@ -6,8 +6,6 @@
 </head>
 <body>
     <h1>Word Highlighting</h1>
-    <input type="file" id="imageInput" accept="image/*">
-    <br><br>
     <input type="text" id="imageUrl" placeholder="Enter image URL">
     <br><br>
     <button onclick="loadImage()">Load Image</button>
@@ -21,7 +19,6 @@
     <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvLoaded();" type="text/javascript"></script>
     <script>
         let inputImage = null;
-        let imagePath = null;
         let imageUrl = null;
 
 function onOpenCvLoaded() {
@@ -29,28 +26,23 @@ function onOpenCvLoaded() {
         }
 
 function loadImage() {
-            const fileInput = document.getElementById('imageInput');
-            const imageContainer = document.getElementById('imageContainer');
-            const inputImageElement = document.getElementById('inputImage');
-
-const file = fileInput.files[0];
-            if (!file) {
-                alert('Please select an image file.');
+            if (imageUrl) {
+                loadImageFromUrl();
+            } else {
+                alert('Please enter an image URL.');
                 return;
             }
-
-            imagePath = file.path;
-            loadImageFromPath(imagePath);
         }
 
-function loadImageFromPath(path) {
+function loadImageFromUrl() {
+            const url = imageUrl;
             const reader = new FileReader();
             reader.onload = (e) => {
                 inputImageElement.src = e.target.result;
                 inputImage = cv.imread(inputImageElement); // Load the image using OpenCV.js
                 imageContainer.style.display = 'block';
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(url);
         }
 
 function highlightWords() {
@@ -75,25 +67,6 @@ function highlightWords() {
 
 // Release resources
             inputImage.delete();
-        }
-
-function loadImageFromUrl() {
-            const url = imageUrl;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                inputImageElement.src = e.target.result;
-                inputImage = cv.imread(inputImageElement); // Load the image using OpenCV.js
-                imageContainer.style.display = 'block';
-            };
-            reader.readAsDataURL(url);
-        }
-
-function loadImage() {
-            if (imageUrl) {
-                loadImageFromUrl();
-            } else {
-                loadImageFromPath(imagePath);
-            }
         }
     </script>
 </body>

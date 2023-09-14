@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,33 +8,39 @@
     <h1>Word Highlighting</h1>
     <input type="file" id="imageInput" accept="image/*">
     <br><br>
-    <button onclick="highlightWords()">Highlight Words</button>
+    <button onclick="loadImage()">Load Image</button>
     <br><br>
     <div id="imageContainer">
         <h2>Image</h2>
         <img id="inputImage" alt="Uploaded Image" style="max-width: 100%; height: auto;">
     </div>
 
-    <!-- Include OpenCV.js -->
+<!-- Include OpenCV.js -->
     <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvLoaded();" type="text/javascript"></script>
     <script>
         let inputImage = null;
+        let imagePath = null;
 
-        function onOpenCvLoaded() {
+function onOpenCvLoaded() {
             document.getElementById('imageInput').disabled = false;
         }
 
-        function loadInputImage() {
+function loadImage() {
             const fileInput = document.getElementById('imageInput');
             const imageContainer = document.getElementById('imageContainer');
             const inputImageElement = document.getElementById('inputImage');
 
-            const file = fileInput.files[0];
+const file = fileInput.files[0];
             if (!file) {
                 alert('Please select an image file.');
                 return;
             }
 
+            imagePath = file.path;
+            loadImageFromPath(imagePath);
+        }
+
+function loadImageFromPath(path) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 inputImageElement.src = e.target.result;
@@ -45,16 +50,16 @@
             reader.readAsDataURL(file);
         }
 
-        function highlightWords() {
+function highlightWords() {
             if (!inputImage) {
                 alert('Please load an image first.');
                 return;
             }
 
-            // Perform OCR to detect words and their positions (you will need to implement this)
+// Perform OCR to detect words and their positions (you will need to implement this)
             // You can use external OCR libraries or services for this purpose.
 
-            // Once you have word positions, you can use OpenCV.js to draw boxes around words.
+// Once you have word positions, you can use OpenCV.js to draw boxes around words.
             // Example code for drawing a box (you will need to adapt this based on your word positions):
             const color = new cv.Scalar(0, 255, 0); // Green color
             const thickness = 2; // Thickness of the box
@@ -62,10 +67,10 @@
             const bottomRight = new cv.Point(200, 100); // Example: Bottom-right corner of the box
             cv.rectangle(inputImage, topLeft, bottomRight, color, thickness);
 
-            // Display the modified image
+// Display the modified image
             cv.imshow('inputImage', inputImage);
 
-            // Release resources
+// Release resources
             inputImage.delete();
         }
     </script>

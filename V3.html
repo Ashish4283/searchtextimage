@@ -22,7 +22,7 @@
     </div>
     <div id="textResult" style="display: none;">
         <h2>Extracted Text</h2>
-        <div id="imageText" style="white-space: pre-wrap;"></div>
+        <div id="imageText" contenteditable="true"></div>
     </div>
     <br><br>
     <input type="text" id="searchWord" placeholder="Enter a word to search">
@@ -33,77 +33,17 @@
     <!-- Include Tesseract.js from a CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.2/tesseract.min.js"></script>
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const uploadedImage = document.getElementById('uploadedImage');
-        const imagePreview = document.getElementById('imagePreview');
-        const textResult = document.getElementById('textResult');
-        const searchWord = document.getElementById('searchWord');
-        const searchResult = document.getElementById('searchResult');
-        const highlightClass = 'highlight';
-
-        async function extractText() {
-            const file = imageInput.files[0];
-            if (!file) {
-                alert('Please select an image file.');
-                return;
-            }
-
-            const imageObjectURL = URL.createObjectURL(file);
-            uploadedImage.src = imageObjectURL;
-            uploadedImage.alt = 'Uploaded Image';
-            imagePreview.style.display = 'block';
-
-            const { data } = await Tesseract.recognize(file);
-            if (textResult) {
-                textResult.style.display = 'block';
-                const imageText = document.getElementById('imageText');
-                if (imageText) {
-                    imageText.innerHTML = data.text;
-                }
-            }
-        }
-
-        function searchText() {
-            const textResult = document.getElementById('textResult');
-            const text = textResult ? textResult.textContent : '';
-            const wordToSearch = searchWord.value.trim();
-
-            if (!wordToSearch) {
-                alert('Please enter a word to search.');
-                return;
-            }
-
-            const regex = new RegExp(`\\b${wordToSearch}\\b`, 'gi');
-            const matches = [];
-            let match;
-
-            while ((match = regex.exec(text)) !== null) {
-                matches.push(match[0]);
-                // Highlight the word in the image
-                highlightWordInImage(match[0]);
-            }
-
-            if (searchResult) {
-                if (matches.length > 0) {
-                    searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
-                } else {
-                    searchResult.innerHTML = 'No matches found.';
-                }
-            }
-        }
+        // ... (your existing JavaScript code)
 
         function highlightWordInImage(word) {
-            const imageText = document.getElementById('imageText');
-            const text = imageText ? imageText.textContent : '';
+            const text = imageText.innerText;
             const startIndex = text.indexOf(word);
             if (startIndex !== -1) {
                 const endIndex = startIndex + word.length;
                 const highlightedText = text.substring(0, startIndex) +
                     `<span class="${highlightClass}">${word}</span>` +
                     text.substring(endIndex);
-                if (imageText) {
-                    imageText.innerHTML = highlightedText;
-                }
+                imageText.innerHTML = highlightedText;
             }
         }
     </script>

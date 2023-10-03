@@ -33,19 +33,54 @@
     <!-- Include Tesseract.js from a CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.2/tesseract.min.js"></script>
     <script>
-        // ... (your existing JavaScript code)
+        // Function to display the uploaded image
+        function displayImage(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const image = document.getElementById('uploadedImage');
+                image.src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
 
-        function highlightWordInImage(word) {
-            const text = imageText.innerText;
-            const startIndex = text.indexOf(word);
-            if (startIndex !== -1) {
-                const endIndex = startIndex + word.length;
-                const highlightedText = text.substring(0, startIndex) +
-                    `<span class="${highlightClass}">${word}</span>` +
-                    text.substring(endIndex);
-                imageText.innerHTML = highlightedText;
+        // Function to extract text from image
+        function extractText() {
+            const image = document.getElementById('uploadedImage');
+            Tesseract.recognize(
+                image,
+                'eng'
+            ).then(({ data: { text } }) => {
+                document.getElementById('imageText').innerText = text;
+                document.getElementById('textResult').style.display = 'block';
+            });
+        }
+
+        // Function to search for a word and highlight it
+        function searchText() {
+            const searchWord = document.getElementById('searchWord').value;
+            const textDiv = document.getElementById('imageText');
+            const text = textDiv.innerText;
+
+            const index = text.indexOf(searchWord);
+            if (index !== -1) {
+                const highlightedText = [
+                    text.slice(0, index),
+                    `<span class="highlight">${searchWord}</span>`,
+                    text.slice(index + searchWord.length)
+                ].join('');
+
+                textDiv.innerHTML = highlightedText;
+            } else {
+                document.getElementById('searchResult').innerText = 'Word not found';
             }
         }
+
+        // Attach event to input change to display the image
+        document.getElementById('imageInput').addEventListener('change', function () {
+            displayImage(this);
+        });
     </script>
 </body>
 </html>

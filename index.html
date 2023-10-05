@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,104 +9,115 @@
         .highlight {
             background-color: yellow;
         }
+
+        /* New styles for the layout */
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #imagePreview {
+            width: 45%;
+            margin-right: 5%;
+        }
+
+        #textResult {
+            width: 50%;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #searchContainer {
+            margin-bottom: 20px;
+        }
+
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.2/tesseract.min.js"></script>
 </head>
+
 <body>
     <h1>Image Text Extraction</h1>
     <input type="file" id="imageInput" accept="image/*">
     <br><br>
     <button onclick="extractText()">Extract Text</button>
     <br><br>
-    <div id="imagePreview" style="display: none;">
-        <h2>Uploaded Image</h2>
-        <img id="uploadedImage" alt="Uploaded Image" style="max-width: 100%; height: auto;">
-    </div>
-    <div id="textResult" style="display: none;">
-        <h2>Extracted Text</h2>
-        <textarea id="imageText" rows="10" cols="50" placeholder="Text from the image will appear here"></textarea>
-    </div>
-    <br><br>
-    <input type="text" id="searchWord" placeholder="Enter a word to search">
-    <button onclick="searchText()">Search</button>
-    <br><br>
-    <div id="searchResult"></div>
 
-    <!-- Include Tesseract.js from a CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.2/tesseract.min.js"></script>
+    <div class="container">
+        <div id="imagePreview" style="display: none;">
+            <h2>Uploaded Image</h2>
+            <img id="uploadedImage" alt="Uploaded Image">
+        </div>
+
+        <div id="textResult" style="display: none;">
+            <div id="searchContainer">
+                <input type="text" id="searchWord" placeholder="Enter a word to search">
+                <button onclick="searchText()">Search</button>
+                <div id="searchResult"></div>
+            </div>
+            <h2>Extracted Text</h2>
+            <div id="imageText" contenteditable="true"></div>
+        </div>
+    </div>
+
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const uploadedImage = document.getElementById('uploadedImage');
-        const imagePreview = document.getElementById('imagePreview');
-        const textResult = document.getElementById('textResult');
-        const imageText = document.getElementById('imageText');
-        const searchWord = document.getElementById('searchWord');
-        const searchResult = document.getElementById('searchResult');
-        const highlightClass = 'highlight';
-
-        async function extractText() {
-            try {
-                const file = imageInput.files[0];
-                if (!file) {
-                    alert('Please select an image file.');
-                    return;
-                }
-
-                const imageObjectURL = URL.createObjectURL(file);
-                uploadedImage.src = imageObjectURL;
-                uploadedImage.alt = 'Uploaded Image';
-                imagePreview.style.display = 'block';
-
-                const { data } = await Tesseract.recognize(file);
-                imageText.value = data.text;
-                textResult.style.display = 'block';
-            } catch (error) {
-                console.error('Error extracting text:', error);
-                alert('An error occurred while extracting text.');
+document.addEventListener("DOMContentLoaded", function() {
+            // Function to display the uploaded image
+            function displayImage(input) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = document.getElementById('uploadedImage');
+                    image.src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
-        }
 
-        function searchText() {
-            try {
-                const text = imageText.value;
-                const wordToSearch = searchWord.value.trim();
+            // Function to extract text from image
+            function extractText() {
+                const image = document.getElementById('uploadedImage');
+                Tesseract.recognize(
+                    image,
+                    'eng'
+                ).then(({ data: { text } }) => {
+                    document.getElementById('imageText').innerText = text;
+                    document.getElementById('textResult').style.display = 'block';
+                });
+            }
 
-                if (!wordToSearch) {
-                    alert('Please enter a word to search.');
-                    return;
-                }
+            // Function to search for a word and highlight it
+            function searchText() {
+                const searchWord = document.getElementById('searchWord').value;
+                const textDiv = document.getElementById('imageText');
+                const text = textDiv.innerText;
 
-                const regex = new RegExp(`${wordToSearch}(\\d*)`, 'g');
-                const matches = [];
-                let match;
+                const index = text.indexOf(searchWord);
+                if (index !== -1) {
+                    const highlightedText = [
+                        text.slice(0, index),
+                        `<span class="highlight">${searchWord}</span>`,
+                        text.slice(index + searchWord.length)
+                    ].join('');
 
-                while ((match = regex.exec(text)) !== null) {
-                    matches.push(match[0]);
-                    // Highlight the word in the image
-                    highlightWordInImage(match[0]);
-                }
-
-                if (matches.length > 0) {
-                    searchResult.innerHTML = `Found matches: ${matches.join(', ')}`;
+                    textDiv.innerHTML = highlightedText;
                 } else {
-                    searchResult.innerHTML = 'No matches found.';
+                    document.getElementById('searchResult').innerText = 'Word not found';
                 }
-            } catch (error) {
-                console.error('Error searching text:', error);
-                alert('An error occurred while searching for text.');
             }
-        }
 
-        function highlightWordInImage(word) {
-            const text = imageText.value;
-            const startIndex = text.indexOf(word);
-            if (startIndex !== -1) {
-                const endIndex = startIndex + word.length;
-                const highlightedText = text.substring(0, startIndex) +
-                    `<span class="${highlightClass}">${word}</span>` +
-                    text.substring(endIndex);
-                imageText.innerHTML = highlightedText;
-            }
-        }
+            // Attach event to input change to display the image
+            document.getElementById('imageInput').addEventListener('change', function () {
+                displayImage(this);
+            });
+
+            // Make functions globally accessible so they can be called from HTML
+            window.displayImage = displayImage;
+            window.extractText = extractText;
+            window.searchText = searchText;
+        });
     </script>
 </body>
 </html>
